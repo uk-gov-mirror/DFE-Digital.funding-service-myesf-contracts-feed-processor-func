@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Pds.Contracts.FeedProcessor.Func": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 32155,
+      "useSSL": false
+    }
+  }
+}

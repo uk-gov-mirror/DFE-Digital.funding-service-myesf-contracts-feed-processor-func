@@ -1,0 +1,799 @@
+﻿trigger:
+  batch: true
+  branches:
+    include:
+      - "*"
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+name: $(Build.BuildId)
+
+variables:
+  buildConfiguration: 'release'
+  # .NET SDK version number
+  dotnetVersion: '3.1'
+  # PDS custom NuGet feed id
+  nugetFeed: '9fd46a3f-eada-41dc-86e9-36332aeb8ef1/ecd5af68-0566-42db-8cd7-e71176254aa2'
+  # Path of project to be published
+  publishProjectPath: 'Pds.Contracts.FeedProcessor/Pds.Contracts.FeedProcessor.Func/Pds.Contracts.FeedProcessor.Func.csproj'
+  # Docker variables
+  dockerRegistryServiceConnectionDev: PDS-DEV-ACR
+  dockerRegistryServiceConnectionPreProd: PDS-OAT-ACR
+  dockerRegistryServiceConnectionProd: PDS-Release-ACR
+  imageRepository: 'myesf/pds-contracts-func-feed-processor'
+  dockerfilePath: 'Pds.Contracts.FeedProcessor/Pds.Contracts.FeedProcessor.Func/Dockerfile'
+  tag: '$(Build.BuildId)'
+  patToken: $(System.AccessToken)
+  # Variables to force .NET to use the legacy libraries and config
+  OPENSSL_CONF: /tmp/openssl_legacy.cnf
+  CLR_OPENSSL_VERSION_OVERRIDE: '1.1'
+  LD_LIBRARY_PATH: /usr/lib/x86_64-linux-gnu
+
+stages:
+# Stage 1 - Audit stage: This stage checks project dependencies for security vulnerabilities
+- stage: Audit
+  displayName: 'Run audit activities'
+  condition: always()
+  jobs:
+  # Job 1 - Audit: This job checks project dependencies for security vulnerabilities using default dotnet command 
+  - job: Audit
+    displayName: 'Audit project dependencies for security vulnerabilities'
+    steps:
+    # Step 1 - Set up .NET SDK
+    - task: UseDotNet@2
+      displayName: 'Set up .NET SDK 8.0.x'
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+    # Step 2 - Restore NuGet packages
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore .NET project dependencies (NuGet)'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+        vstsFeed: $(nugetFeed)
+    # Step 3 - Check for security vulnerabilities within project dependencies
+    - task: Bash@3
+      displayName: 'Scan for vulnerable NuGet packages'
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Run dotnet command to check for vulnerable packages, including transitive dependencies
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee build.log
+          echo "Analyse dotnet list package command log output..."
+          # TODO - After AutoMapper is replaced or upgraded, amend to include high severity vulnerabilities in the scan.
+          # if grep -q -i "critical\|high" build.log; then
+          if grep -q -i "critical" build.log; then
+              echo "Must fix security vulnerabilities found on the log output."
+              # exit 1      # Fails the job if critical or high vulnerabilities are found
+              exit 1      # Fails the job if critical vulnerabilities are found
+          else
+              # echo "No critical or high severity vulnerabilities found."
+              echo "No critical vulnerabilities found."
+              # exit 0      # Passes the job if no critical/high vulnerabilities are found
+              exit 0      # Passes the job if no critical vulnerabilities are found
+          fi
+
+# Stage 2 - Test stage: This stage runs the project unit tests
+- stage: Test
+  displayName: 'Run unit tests'
+  dependsOn: Audit
+  condition: succeeded()
+  jobs:
+  # Job 1 - Unit: Runs unit tests.
+  - job: Unit
+    displayName: 'Run unit tests'
+    dependsOn: []
+    steps:
+    # Step 1 - Download schema .xsd files
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1103
+      displayName: 'Download contract_corporate_schema_v11.03.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.03.xsd 
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1104
+      displayName: 'Download contract_corporate_schema_v11.04.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.04.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1105
+      displayName: 'Download contract_corporate_schema_v11.05.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.05.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1106
+      displayName: 'Download contract_corporate_schema_v11.06.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.06.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1107
+      displayName: 'Download contract_corporate_schema_v11.07.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.07.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1108
+      displayName: 'Download contract_corporate_schema_v11.08.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.08.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1109
+      displayName: 'Download contract_corporate_schema_v11.09.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.09.xsd
+    # Step 2 - Copy schema files to destination directory
+    - task: PowerShell@2
+      inputs:
+        targetType: inline
+        script: |
+          Write-Host "Copying schema 11_03 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_03"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1103.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.03.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1103.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.03.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_04 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_04"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1104.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.04.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1104.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.04.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_05 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_05"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1105.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.05.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1105.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.05.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_06 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_06"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1106.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.06.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1106.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.06.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_07 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_07"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1107.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.07.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1107.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.07.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_08 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_08"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.08.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1108.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.08.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_09 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_09"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.09.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1109.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.09.xsd"
+          Write-Host "File copied!"
+    # Step 3 - Fix the underlying OS dependency for .NET 3.1
+    - script: |
+        # Add Focal security repo for the library
+        echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+        sudo apt-get update
+        sudo apt-get install -y libssl1.1
+        
+        # Create the clean config to bypass OpenSSL 3.0 "unknown module" errors
+        echo "openssl_conf = default_conf
+        [default_conf]
+        ssl_conf = ssl_sect
+        [ssl_sect]
+        system_default = system_default_sect
+        [system_default_sect]
+        CipherString = DEFAULT@SECLEVEL=1" > /tmp/openssl_legacy.cnf
+
+        # Ensure certificate paths are linked
+        sudo mkdir -p /usr/local/ssl
+        sudo ln -sf /etc/ssl/certs /usr/local/ssl/certs
+      displayName: 'Environment Isolation for .NET 3.1'
+    # Step 4 - Set up .NETCore SDK
+    - task: UseDotNet@2
+      displayName: 'Set up .NET SDK (version $(dotnetVersion))'
+      inputs:
+        packageType: sdk
+        version: '$(dotnetVersion).x'
+    # Step 5 - Authenticate to your private Azure Artifacts feed
+    - task: NuGetAuthenticate@1
+      displayName: 'Authenticate with NuGet'
+    # Step 6 - 'Restore .NET project dependencies (NuGet)'
+    - task: DotNetCoreCLI@2.242.1
+      displayName: 'Restore .NET project dependencies (NuGet)'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+        vstsFeed: $(nugetFeed)
+        verbosityRestore: 'Normal'
+    # Step 7 - Build the project
+    - task: DotNetCoreCLI@2.242.1
+      displayName: 'Build project'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-restore'
+    # Step 8 - Run unit tests and filter by category
+    - task: DotNetCoreCLI@2.242.1
+      displayName: 'Run unit tests'
+      inputs:
+        command: 'test'
+        projects: '**/*[Tt]ests/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-build --collect "Code coverage" --filter TestCategory=Unit'
+        testRunTitle: '$(Build.Repository.Name)-Unit-$(Build.BuildId)'
+
+# Stage 3 - Publish stage: This stage publishes the Docker Image and build artifact to be deployed in the release pipelines
+- stage: Publish
+  displayName: 'Publish Docker image and build artifact'
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  # Job 1 - Build and Push to Development ACR
+  - job: DockerBuildDev
+    displayName: 'Build and push Docker image for Development'
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
+    steps:
+    # Step 1 Download schema .xsd files
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1103
+      displayName: 'Download contract_corporate_schema_v11.03.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.03.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1104
+      displayName: 'Download contract_corporate_schema_v11.04.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.04.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1105
+      displayName: 'Download contract_corporate_schema_v11.05.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.05.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1106
+      displayName: 'Download contract_corporate_schema_v11.06.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.06.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1107
+      displayName: 'Download contract_corporate_schema_v11.07.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.07.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1108
+      displayName: 'Download contract_corporate_schema_v11.08.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.08.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1109
+      displayName: 'Download contract_corporate_schema_v11.09.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.09.xsd
+    # Step 2 - Copy schema files to destination directory
+    - task: PowerShell@2
+      inputs:
+        targetType: inline
+        script: |
+            Write-Host "Copying schema 11_03 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_03"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1103.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.03.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1103.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.03.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_04 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_04"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1104.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.04.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1104.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.04.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_05 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_05"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1105.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.05.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1105.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.05.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_06 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_06"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1106.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.06.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1106.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.06.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_07 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_07"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1107.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.07.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1107.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.07.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_08 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_08"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.08.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1108.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.08.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_09 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_09"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.09.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1109.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.09.xsd"
+            Write-Host "File copied!"
+    # Step 3: Build the Docker image
+    - task: Docker@2
+      displayName: 'Build Docker image'
+      inputs:
+        command: build
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnectionDev)
+        dockerfile: $(dockerfilePath)
+        buildContext: '$(Build.SourcesDirectory)/Pds.Contracts.FeedProcessor'
+        tags: |
+            latest
+            $(tag)
+        arguments: |
+            --build-arg PDS_FEED_PAT=$(patToken)        
+    # Step 4: Push the Docker image to the Development container registry
+    - task: Docker@2
+      displayName: 'Push Docker image to Development container registry'
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnectionDev)
+        tags: |
+          latest
+          $(tag)
+  # Job 2 - Build and Push to Pre-production and Production ACR    
+  - job: DockerBuildPreProdProd
+    displayName: 'Build and push Docker Image for Pre-production and Production'
+    condition: startsWith(variables['build.sourceBranch'], 'refs/heads/release')
+    steps:
+    # Step 1 Download schema .xsd files
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1103
+      displayName: 'Download contract_corporate_schema_v11.03.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.03.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1104
+      displayName: 'Download contract_corporate_schema_v11.04.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.04.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1105
+      displayName: 'Download contract_corporate_schema_v11.05.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.05.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1106
+      displayName: 'Download contract_corporate_schema_v11.06.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.06.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1107
+      displayName: 'Download contract_corporate_schema_v11.07.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.07.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1108
+      displayName: 'Download contract_corporate_schema_v11.08.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.08.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1109
+      displayName: 'Download contract_corporate_schema_v11.09.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.09.xsd
+    # Step 2 - Copy schema files to destination directory
+    - task: PowerShell@2
+      inputs:
+        targetType: inline
+        script: |
+            Write-Host "Copying schema 11_03 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_03"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1103.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.03.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1103.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.03.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_04 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_04"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1104.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.04.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1104.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.04.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_05 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_05"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1105.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.05.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1105.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.05.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_06 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_06"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1106.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.06.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1106.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.06.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_07 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_07"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1107.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.07.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1107.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.07.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_08 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_08"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.08.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1108.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.08.xsd"
+            Write-Host "File copied!"
+
+            Write-Host "Copying schema 11_09 to destination directory"
+            $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_09"
+
+            Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.09.xsd'"
+
+            if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+            }
+
+            Copy-Item -Path "$(downloadSchemaV1109.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.09.xsd"
+            Write-Host "File copied!"
+    # Step 3: Build the Docker image
+    - task: Docker@2
+      displayName: 'Build Docker image'
+      inputs:
+          command: build
+          repository: $(imageRepository)
+          containerRegistry: $(dockerRegistryServiceConnectionPreProd)
+          dockerfile: $(dockerfilePath)
+          buildContext: '$(Build.SourcesDirectory)/Pds.Contracts.FeedProcessor'
+          tags: |
+            latest-rc
+            $(tag)-rc
+          arguments:
+            --build-arg PDS_FEED_PAT=$(patToken)
+    # Step 4: Push the Docker image to the Pre-prod container registry
+    - task: Docker@2
+      displayName: 'Push Docker image to Pre-prod container registry'
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnectionPreProd)
+        tags: |
+          latest-rc
+          $(tag)-rc
+    # Step 5: Build the Docker image
+    - task: Docker@2
+      displayName: 'Build Docker image'
+      inputs:
+        command: build
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnectionProd)
+        dockerfile: $(dockerfilePath)
+        buildContext: '$(Build.SourcesDirectory)/Pds.Contracts.FeedProcessor'
+        tags: |
+          latest-rc
+          $(tag)-rc
+        arguments:
+          --build-arg PDS_FEED_PAT=$(patToken)
+    # Step 6: Push the Docker image to the Prod container registry
+    - task: Docker@2
+      displayName: 'Push Docker image to Prod container registry'
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnectionProd)
+        tags: |
+          latest-rc
+          $(tag)-rc
+  # Job 3 - Publish: This job publishes the build artifact from the project
+  - job: PublishArtifact
+    displayName: 'Publish build artifact'
+    steps:    
+    # Step 1 - Download schema .xsd files
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1103
+      displayName: 'Download contract_corporate_schema_v11.03.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.03.xsd 
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1104
+      displayName: 'Download contract_corporate_schema_v11.04.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.04.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1105
+      displayName: 'Download contract_corporate_schema_v11.05.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.05.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1106
+      displayName: 'Download contract_corporate_schema_v11.06.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.06.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1107
+      displayName: 'Download contract_corporate_schema_v11.07.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.07.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1108
+      displayName: 'Download contract_corporate_schema_v11.08.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.08.xsd
+    - task: DownloadSecureFile@1
+      name: downloadSchemaV1109
+      displayName: 'Download contract_corporate_schema_v11.09.xsd'
+      inputs:
+        secureFile: contract_corporate_schema_v11.09.xsd
+    # Step 2 - Copy schema files to destination directory
+    - task: PowerShell@2
+      inputs:
+        targetType: inline
+        script: |
+          Write-Host "Copying schema 11_03 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_03"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1103.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.03.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1103.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.03.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_04 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_04"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1104.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.04.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1104.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.04.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_05 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_05"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1105.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.05.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1105.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.05.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_06 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_06"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1106.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.06.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1106.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.06.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_07 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_07"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1107.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.07.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1107.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.07.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_08 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_08"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.08.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1108.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.08.xsd"
+          Write-Host "File copied!"
+
+          Write-Host "Copying schema 11_09 to destination directory"
+          $sourceDestination = "$(System.DefaultWorkingDirectory)\Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services\Schema\11_09"
+
+          Write-Host "Copying schema file from $(downloadSchemaV1108.secureFilePath) to target '$sourceDestination\contract_corporate_schema_v11.09.xsd'"
+
+          if(-not (Test-Path -Path "$sourceDestination")) {
+            New-Item -Type Directory -Path "$sourceDestination"
+          }
+
+          Copy-Item -Path "$(downloadSchemaV1109.secureFilePath)" -Destination "$sourceDestination\contract_corporate_schema_v11.09.xsd"
+          Write-Host "File copied!"
+    # Step 3 - Fix the underlying OS dependency for .NET 3.1
+    - script: |
+        # Add Focal security repo for the library
+        echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+        sudo apt-get update
+        sudo apt-get install -y libssl1.1
+
+        # Create the clean config to bypass OpenSSL 3.0 "unknown module" errors
+        echo "openssl_conf = default_conf
+        [default_conf]
+        ssl_conf = ssl_sect
+        [ssl_sect]
+        system_default = system_default_sect
+        [system_default_sect]
+        CipherString = DEFAULT@SECLEVEL=1" > /tmp/openssl_legacy.cnf
+
+        # Ensure certificate paths are linked
+        sudo mkdir -p /usr/local/ssl
+        sudo ln -sf /etc/ssl/certs /usr/local/ssl/certs
+      displayName: 'Environment Isolation for .NET 3.1'
+    # Step 4 - Set up .NET SDK
+    - task: UseDotNet@2
+      displayName: 'Set up .NET SDK (version $(dotnetVersion))'
+      inputs:
+        packageType: 'sdk'
+        version: '$(dotnetVersion).x'
+    # Step 5 - Authenticate to your private Azure Artifacts feed
+    - task: NuGetAuthenticate@1
+      displayName: 'Authenticate with NuGet'
+    # Step 6 - Restore NuGet packages
+    - task: DotNetCoreCLI@2.242.1
+      displayName: 'Restore .NET project dependencies (NuGet)'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+        vstsFeed: $(nugetFeed)
+        verbosityRestore: 'Normal'
+    # Step 7 - Build the project
+    - task: DotNetCoreCLI@2.242.1
+      displayName: 'Build project'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --no-restore'
+    # Step 8 - Publish project
+    - task: DotNetCoreCLI@2.242.1
+      displayName: 'Publish project'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        zipAfterPublish: true
+        projects: $(publishProjectPath)
+        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build'
+    # Step 9 - Copy published project to artifact directory
+    - task: CopyFiles@2
+      displayName: 'Copy files to: $(build.artifactstagingdirectory)'
+      inputs:
+        contents: |
+          azure/**
+        targetFolder: '$(build.artifactstagingdirectory)/publish'
+    # Step 10 - Publish build artifact
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish build artifact'
+      inputs:
+        pathtoPublish: '$(build.artifactstagingdirectory)/publish'

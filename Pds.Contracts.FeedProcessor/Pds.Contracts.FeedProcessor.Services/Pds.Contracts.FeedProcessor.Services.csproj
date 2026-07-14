@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Implementations\FcsFeedReaderService.cs~RF14e0aa8e.TMP" />
+    <None Remove="Pds.Contracts.FeedProcessor.Services.csproj.transform" />
+	<None Remove="Schema\11_04\contract_corporate_schema_v11.04.xsd" />
+    <None Remove="Schema\11_05\contract_corporate_schema_v11.05.xsd" />
+    <None Remove="Schema\11_06\contract_corporate_schema_v11.06.xsd" />
+    <None Remove="Schema\11_07\contract_corporate_schema_v11.07.xsd" />
+    <None Remove="Schema\11_08\contract_corporate_schema_v11.08.xsd" />
+    <None Remove="Schema\11_09\contract_corporate_schema_v11.09.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<EmbeddedResource Include="Schema\11_03\contract_corporate_schema_v11.03.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Schema\11_04\contract_corporate_schema_v11.04.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Schema\11_05\contract_corporate_schema_v11.05.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Schema\11_06\contract_corporate_schema_v11.06.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>  
+    <EmbeddedResource Include="Schema\11_07\contract_corporate_schema_v11.07.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>  
+    <EmbeddedResource Include="Schema\11_08\contract_corporate_schema_v11.08.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>  
+    <EmbeddedResource Include="Schema\11_09\contract_corporate_schema_v11.09.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.14.1" />
+    <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Core" Version="3.0.32" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="4.3.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.11" />
+    <PackageReference Include="Pds.Audit.Api.Client" Version="1.1.2" />
+    <PackageReference Include="Pds.Core.CodeAnalysis.StyleCop" Version="2.0.0" />
+    <PackageReference Include="Pds.Core.Utils" Version="2.7.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
+    <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+
+</Project>
