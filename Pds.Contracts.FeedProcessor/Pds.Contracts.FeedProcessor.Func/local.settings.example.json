@@ -1,0 +1,58 @@
+{
+  "IsEncrypted": false,
+  "version": "2.0",
+  "Values": {
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "",
+    "AuditApiConfiguration": {
+      "ApiBaseAddress": "",
+      "AppUri": "",
+      "Authority": "",
+      "ClientId": "",
+      "ClientSecret": "",
+      "ShouldSkipAuthentication": "",
+      "TenantId": ""
+    },
+    "AzureStorageAccountOptions": {
+      "BlobAccessOptions": {
+        "Delay": "0.00:00:15",
+        "RetryCount": "3",
+        "XmlStorageContainer": ""
+      },
+      "ConnectionString": "",
+      "TableAccessOptions": {
+        "ConfigTableName": "",
+        "DeltaBackOff": "0.00:00:15",
+        "MaxAttempts": "3",
+        "PartitionKey": "FeedProcessor"
+      }
+    },
+    "AzureWebJobsStorage": "",
+    "ContractEventsSessionQueue": "",
+    "Environment": "at",
+    "FeedReaderOptions": {
+      "ApiBaseAddress": "",
+      "Authority": "",
+      "ClientId": "",
+      "ClientSecret": "",
+      "TenantId": "",
+      "HttpPolicyOptions": {
+        "CircuitBreakerDurationOfBreak": "0.00:00:15",
+        "CircuitBreakerToleranceCount": "5",
+        "HttpRetryBackoffPower": "2",
+        "HttpRetryCount": "3"
+      }
+    },
+    "FUNCTIONS_EXTENSION_VERSION": "~3",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "PdsApplicationInsights": {
+      "Environment": "",
+      "InstrumentationKey": ""
+    },
+    "SchemaValidationSettings": {
+      "EnableSchemaVersionValidation": "false",
+      "SchemaManifestFilename": "contract_corporate_schema_v11.09.xsd",
+      "SchemaVersion": "11_09"
+    },
+    "TimerInterval": "*/30 * * * * *"
+  }
+}

@@ -1,134 +1,194 @@
-# Manage your education and skills funding - Contracts atom feed processor
+# Manage Your Education and Skills Funding Contracts Feed Processor Function
+The Manage Your Education and Skills Funding Contracts Feed Processor Function app is used by the MYESF to allow the following:
+- Reads FCS ATOM feed.
+- Process the feed and add message to service bus message queue.
 
-## Introduction
+## Provider
 
-Contracts feed processor is a serverless azure function that reads contract event atom feed. This function is a timer triggered function.
+[The Department for Education](https://www.gov.uk/government/organisations/department-for-education)
 
-### Getting Started
+## About this project
 
-This product is a Visual Studio 2019 solution containing several projects (Azure function application and service layers, with associated unit test and integration test projects).
-To run this product locally, you will need to configure the list of dependencies, once configured and the configuration files updated, it should be F5 to run and debug locally.
+This project is a .Net Core 3.1 timer triggered Azure Function project utilizing an Azure Function App for deployment.
 
-### Installing
+**Note:** The project is currently being updated to be containerised via Docker where the deployment method and target will change, this document will be updated when these changes have been finalised.
 
-Clone the project and open the solution in Visual Studio 2019.
+# Local Configuration Guide
 
-#### List of dependencies
+For running the application locally, `local.settings.json` file need to be created in the `Pds.Contracts.FeedProcessor.Func` project. Below, and included in the repo, there is `local.settings.example.json` which can be used as a base and populated with the required values, which can be retrieved from the Azure Portal.
 
-|Item |Purpose|
-|-------|-------|
-|Azure Storage Emulator| The Microsoft Azure Storage Emulator is a tool that emulates the Azure Blob, Queue, and Table services for local development purposes. This is required for webjob storage used by azure functions.|
-|Azure function development tools | To run and test azure functions locally. |
-|Azure service bus | When the feeds are processed, a message will be created for the contract processor to continue processing of contract events. Service bus cannot be set up locally, you will need an azure subscription to set-up. |
-|Contracts Atom Feed | Atom feed with contract events for processing. |
-|Audit API | Audit API provides a single shared service to audit events in "Manage your education and skills funding". |
+The Microsoft Azure Storage Emulator can be used to emulate the Azure Blob, Queue, and Table services for local development purposes.
 
-#### Azure Storage Emulator
-
-The Storage Emulator is available as part of the Microsoft Azure SDK. Azure functions require it for local development.
-
-#### Azure function development tools
-
-You can use your favourite code editor and development tools to create and test functions on your local computer.
-We used visual studio and Azure core tools CLI for development and testing. You can find more information for your favourite code editor at <https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-local>.
-
-* Using Visual Studio - To develop functions using visual studio, include the Azure development workload in your Visual Studio installation. More detailed information can be found at <https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs>.
-* Azure Functions Core Tools - These tools provide CLI with core runtime and templates for creating functions, which can be used to develop and run functions without visual studio. This can be installed using package managers like `npm` or `chocolately` more detailed information can be found at <https://www.npmjs.com/package/azure-functions-core-tools>.
-
-#### Azure service bus
-
-Microsoft Azure Service Bus is a fully managed enterprise message broker.
-Publish-subscribe topics are used by this application to decouple approval processing.
-There are no emulators available for azure service bus, hence you will need an azure subscription and set-up a service bus namesapce with a topic created to run this application.
-Once you have set-up an azure service bus namespace, you will need to create a shared access policy to set in local configuration settings.
-
-#### Contracts Atom feed
-
-Atom feed with contract events for processing, the atom entry's content will have contract payload that will be processed by feed processor. A sample entry content can be found [here](Pds.Contracts.FeedProcessor\Pds.Contracts.FeedProcessor.Services.Tests\Documents\11_03\ESIF-9999-v5-Partial.xml).
-
-#### Audit API
-
-Audit API can be found at <https://github.com/SkillsFundingAgency/pds-shared-audit-api>.
-
-### Local Config Files
-
-Once you have cloned the public repo you need the following configuration files listed below.
-
-| Location | config file |
-|-------|-------|
-| Pds.Contracts.FeedProcessor.Func | local.settings.json |
-
-The following is a sample configuration file
-
-```json
+## Application Settings (`local.settings.json`)
+```
 {
   "IsEncrypted": false,
   "version": "2.0",
   "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "WEBSITE_TIME_ZONE": "GMT Standard Time",
-    "ServiceBusConnection": "replace_ServiceBusConnectionString",
-    "ContractEventsSessionQueue": "replace_QueueName",
-    "TimerInterval": "* */5 * * * *"
-  },
-  "AzureStorageAccountOptions": {
-    "ConnectionString": "UseDevelopmentStorage=true",
-    "BlobAccessOptions": {
-      "XmlStorageContainer": "xmlfiles",
-      "RetryCount": 3,
-      "Delay": "0.00:00:30"
+    "APPINSIGHTS_INSTRUMENTATIONKEY": ""
+    "AuditApiConfiguration": {
+      "ApiBaseAddress": "",
+      "AppUri": "",
+      "Authority": "",
+      "ClientId": "",
+      "ClientSecret": "",
+      "ShouldSkipAuthentication": "",
+      "TenantId": ""
     },
-    "TableAccessOptions": {
-      "ConfigTableName": "TableName",
-      "PartitionKey": "PartitionKey",
-      "DeltaBackOff": "00:00:15",
-      "MaxAttempts": 3
-    }
-  },
-  "AuditApiConfiguration": {
-    "ApiBaseAddress": "replace_local_audit_api_or_stub",
-    "ShouldSkipAuthentication": "true",
-    "CreateAuditEntryEndpoint": {
-      "Endpoint": "/api/audit"
-    }
-  },
-  "FeedReaderOptions": {
-    "ApiBaseAddress": "replace_local_contract_notifications_api_or_stub",
-    "FcsAtomFeedSelfPageEndpoint": "/api/contracts/notifications",
-    "Authority": "https://login.microsoftonline.com/",
-    "ShouldSkipAuthentication" : "true",
-    "HttpPolicyOptions": {
-      "HttpRetryCount": 3,
-      "HttpRetryBackoffPower": 2,
-      "CircuitBreakerToleranceCount": 5,
-      "CircuitBreakerDurationOfBreak": "0.00:00:15"
-    }
+    "AzureStorageAccountOptions": {
+      "BlobAccessOptions": {
+        "Delay": "0.00:00:15",
+        "RetryCount": "3",
+        "XmlStorageContainer": ""
+      },
+      "ConnectionString": "",
+      "TableAccessOptions": {
+        "ConfigTableName": "",
+        "DeltaBackOff": "0.00:00:15",
+        "MaxAttempts": "3",
+        "PartitionKey": "FeedProcessor"
+      }
+    },
+    "AzureWebJobsStorage": "",
+    "ContractEventsSessionQueue": "",
+    "Environment": "at",
+    "FeedReaderOptions": {
+      "ApiBaseAddress": "",
+      "Authority": "",
+      "ClientId": "",
+      "ClientSecret": "",
+      "TenantId": "",
+      "HttpPolicyOptions": {
+        "CircuitBreakerDurationOfBreak": "0.00:00:15",
+        "CircuitBreakerToleranceCount": "5",
+        "HttpRetryBackoffPower": "2",
+        "HttpRetryCount": "3"
+      }
+    },
+    "FUNCTIONS_EXTENSION_VERSION": "~3",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "PdsApplicationInsights": {
+      "Environment": "",
+      "InstrumentationKey": ""
+    },
+    "SchemaValidationSettings": {
+      "EnableSchemaVersionValidation": "false",
+      "SchemaManifestFilename": "contract_corporate_schema_v11.09.xsd",
+      "SchemaVersion": "11_09"
+    },
+    "TimerInterval": "*/30 * * * * *"
   }
 }
 ```
+### Setting Details
 
-The following configurations need to be replaced with your values.
-|Key|Token|Example|
-|-|-|-|
-|FeedReaderOptions.ApiBaseAddress|replace_local_contract_notifications_api_or_stub|<http://localhost:5001>|
-|AuditApiConfiguration.ApiBaseAddress|replace_local_audit_api_or_stub|<http://localhost:5002/>|
-|MonolithServiceBusConfiguration.ConnectionString|replace_ServiceBusConnectionString|A valid azure service bus connection string|
-|ServiceBusConnectionString|replace_ServiceBusConnectionString|A valid azure service bus connection string|
-|ContractEventsSessionQueue|replace_QueueName|atom-feed-queue|
+- **`APPINSIGHTS_INSTRUMENTATIONKEY`**  
+  The key value for Application Insights resource for logging.
 
-## Build and Test
+- **`AuditApiConfiguration:ApiBaseAddress`**  
+  The base URL endpoint for Audit API.
 
-This API is built using
+- **`AuditApiConfiguration:AppUri`**  
+  The unique Application ID URI used as the identifier for the protected Audit API resource within the Identity Provider.
 
-* Microsoft Visual Studio 2019
-* .Net Core 3.1
+- **`AuditApiConfiguration:Authority`**  
+  The base URL of the Identity Provider responsible for authenticating and issuing tokens for the Audit API client.
 
-To build and test locally, you can either use visual studio 2019 or VSCode or simply use dotnet CLI `dotnet build` and `dotnet test` more information in dotnet CLI can be found at <https://docs.microsoft.com/en-us/dotnet/core/tools/>.
+- **`AuditApiConfiguration:ClientId`**  
+  The unique identifier assigned to the admin client application to authenticate its identity against the security provider when calling the Audit API.
 
-## Contribute
+- **`AuditApiConfiguration:ClientSecret`**  
+  The secret credential used by the Audit client application to securely prove its identity to the Identity Provider.
 
-To contribute,
+- **`AuditApiConfiguration:TenantId`**  
+  The unique identifier that specifies the exact organization or cloud instance within the Identity Provider where the Audit API client is registered.
 
-* If you are part of the team then create a branch for changes and then submit your changes for review by creating a pull request.
-* If you are external to the organisation then fork this repository and make necessary changes and then submit your changes for review by creating a pull request.
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:BlobAccessOptions:Delay`**  
+  The duration to wait between retry attempts when a transient error occurs during a Blob storage operation.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:BlobAccessOptions:RetryCount`**  
+  The maximum number of retry attempts allowed for a single Blob storage operation before throwing an exception.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:BlobAccessOptions:XmlStorageContainer`**  
+  The name of the specific Azure Blob Storage container where XML data or configuration files are stored.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:ConnectionString`**  
+  The primary authentication connection string containing endpoints and credentials used to connect to the custom Azure Storage Account.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:TableAccessOptions:ConfigTableName`**  
+  The name of the Azure Table Storage table designated to hold application configuration settings or state data.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:TableAccessOptions:DeltaBackOff`**  
+  The incremental time value used in exponential backoff algorithms to increase the wait time between subsequent table operation retries.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:TableAccessOptions:MaxAttempts`**  
+  The maximum number of connection or execution attempts permitted for an Azure Table Storage operation before it fails.
+
+- **`AzureStorageAccountOptions:TableAccessOptions:PartitionKey`**  
+  The logical partition key identifier used to group related entities inside Azure Table Storage for optimal querying.
+
+- **`AzureWebJobsStorage`**  
+  The standard environment variable used by the Azure Functions host to manage essential runtime operations like logging, triggers, and locks.
+
+- **`ContractEventsSessionQueue`**  
+  Azure service bus queue name.
+
+- **`Environment`**  
+  The environment which the app is running on.
+
+- **`FeedReaderOptions:ApiBaseAddress`**  
+  The base URL endpoint for Feed Reader API.
+
+- **`FeedReaderOptions:AppUri`**  
+  The unique Application ID URI used as the identifier for the protected Feed Reader API resource within the Identity Provider.
+
+- **`FeedReaderOptions:Authority`**  
+  The base URL of the Identity Provider responsible for authenticating and issuing tokens for the Feed Reader API client.
+
+- **`FeedReaderOptions:ClientId`**  
+  The unique identifier assigned to the admin client application to authenticate its identity against the security provider when calling the Feed Reader API.
+
+- **`FeedReaderOptions:ClientSecret`**  
+  The secret credential used by the Feed Reader client application to securely prove its identity to the Identity Provider.
+
+- **`FeedReaderOptions:TenantId`**  
+  The unique identifier that specifies the exact organization or cloud instance within the Identity Provider where the Feed Reader API client is registered.
+
+- **`FeedReaderOptions:FcsAtomFeedSelfPageEndpoint`**  
+  Latest page path for Feed Reader API
+
+- **`FeedReaderOptions:HttpPolicyOptions:CircuitBreakerDurationOfBreak`**  
+  The duration (typically a `TimeSpan` string) that the circuit breaker remains open, blocking all outgoing HTTP requests, before entering a test state.
+
+- **`FeedReaderOptions:HttpPolicyOptions:CircuitBreakerToleranceCount`**  
+  The consecutive number of failed HTTP requests or specific status codes allowed before the circuit breaker trips and opens.
+
+- **`FeedReaderOptions:HttpPolicyOptions:HttpRetryBackoffPower`**  
+  The mathematical exponent or base value used to calculate the exponential delay between consecutive HTTP retry attempts.
+
+- **`FeedReaderOptions:HttpPolicyOptions:HttpRetryCount`**  
+  The maximum number of retry attempts allowed for a single HTTP request when encountering transient network errors or specific failure status codes.
+
+- **`FUNCTIONS_EXTENSION_VERSION`**  
+  The functions extension version number.
+
+- **`FUNCTIONS_WORKER_RUNTIME`**  
+  The functions runtime.
+
+- **`PdsApplicationInsights:Environment`**  
+  The environment which the app is running on for Application Insights for logging purposes.
+
+- **`PdsApplicationInsights:InstrumentationKey`**  
+  The key for Application Insights resource for logging purposes.
+
+- **`SchemaValidationSettings:EnableSchemaVersionValidation`**  
+  Boolean value for enabling enable schema version validation.
+
+- **`SchemaValidationSettings:SchemaManifestFilename`**  
+  Schema file name.
+
+- **`SchemaValidationSettings:SchemaVersion`**  
+  Schema Version
+
+- **`TimerInterval`**  
+  A CRON expression string (e.g., `0 */5 * * * *`) that defines the schedule or execution interval for a background worker, recurring job, or Azure Function timer trigger.
