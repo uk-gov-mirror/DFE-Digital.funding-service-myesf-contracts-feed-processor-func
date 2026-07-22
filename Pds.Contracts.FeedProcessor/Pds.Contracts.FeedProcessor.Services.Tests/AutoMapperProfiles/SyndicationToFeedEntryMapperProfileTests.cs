@@ -1,8 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pds.Contracts.FeedProcessor.Services.AutoMapperProfiles;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Pds.Contracts.FeedProcessor.Services.AutoMapperProfiles.Tests
 {

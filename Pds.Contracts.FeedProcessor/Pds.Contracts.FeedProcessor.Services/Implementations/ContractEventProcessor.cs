@@ -1,5 +1,4 @@
-﻿using Pds.Contracts.FeedProcessor.Services.Extensions;
-using Pds.Contracts.FeedProcessor.Services.Interfaces;
+﻿using Pds.Contracts.FeedProcessor.Services.Interfaces;
 using Pds.Contracts.FeedProcessor.Services.Models;
 using Pds.Core.Logging;
 using System;

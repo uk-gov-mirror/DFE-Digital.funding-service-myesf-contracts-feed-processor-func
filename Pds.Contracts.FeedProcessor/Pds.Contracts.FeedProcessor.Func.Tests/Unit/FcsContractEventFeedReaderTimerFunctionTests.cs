@@ -3,10 +3,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Pds.Contracts.FeedProcessor.Func;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Pds.Contracts.FeedProcessor.Func.Tests.Unit

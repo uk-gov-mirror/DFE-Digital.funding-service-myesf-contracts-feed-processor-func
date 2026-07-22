@@ -1,58 +1,43 @@
 {
   "IsEncrypted": false,
-  "version": "2.0",
   "Values": {
-    "APPINSIGHTS_INSTRUMENTATIONKEY": "",
-    "AuditApiConfiguration": {
-      "ApiBaseAddress": "",
-      "AppUri": "",
-      "Authority": "",
-      "ClientId": "",
-      "ClientSecret": "",
-      "ShouldSkipAuthentication": "",
-      "TenantId": ""
-    },
-    "AzureStorageAccountOptions": {
-      "BlobAccessOptions": {
-        "Delay": "0.00:00:15",
-        "RetryCount": "3",
-        "XmlStorageContainer": ""
-      },
-      "ConnectionString": "",
-      "TableAccessOptions": {
-        "ConfigTableName": "",
-        "DeltaBackOff": "0.00:00:15",
-        "MaxAttempts": "3",
-        "PartitionKey": "FeedProcessor"
-      }
-    },
-    "AzureWebJobsStorage": "",
+    "AuditApiConfiguration:ApiBaseAddress": "",
+    "AuditApiConfiguration:AppUri": "",
+    "AuditApiConfiguration:Authority": "",
+    "AuditApiConfiguration:ClientId": "",
+    "AuditApiConfiguration:ClientSecret": "",
+    "AuditApiConfiguration:ShouldSkipAuthentication": "",
+    "AuditApiConfiguration:TenantId": "",
+    "AzureStorageAccountOptions:BlobAccessOptions:Delay": "0.00:00:15",
+    "AzureStorageAccountOptions:BlobAccessOptions:RetryCount": "3",
+    "AzureStorageAccountOptions:BlobAccessOptions:XmlStorageContainer": "",
+    "AzureStorageAccountOptions:ConnectionString": "",
+    "AzureStorageAccountOptions:TableAccessOptions:ConfigTableName": "",
+    "AzureStorageAccountOptions:TableAccessOptionsDeltaBackOff": "0.00:00:15",
+    "AzureStorageAccountOptions:TableAccessOptionsMaxAttempts": "3",
+    "AzureStorageAccountOptions:TableAccessOptionsPartitionKey": "",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
     "ContractEventsSessionQueue": "",
-    "Environment": "at",
-    "FeedReaderOptions": {
-      "ApiBaseAddress": "",
-      "Authority": "",
-      "ClientId": "",
-      "ClientSecret": "",
-      "TenantId": "",
-      "HttpPolicyOptions": {
-        "CircuitBreakerDurationOfBreak": "0.00:00:15",
-        "CircuitBreakerToleranceCount": "5",
-        "HttpRetryBackoffPower": "2",
-        "HttpRetryCount": "3"
-      }
-    },
+    "Environment": "local",
+    "FeedReaderOptions:ApiBaseAddress": "",
+    "FeedReaderOptions:AppUri": "",
+    "FeedReaderOptions:Authority": "",
+    "FeedReaderOptions:ClientId": "",
+    "FeedReaderOptions:ClientSecret": "",
+    "FeedReaderOptions:TenantId": "",
+    "FeedReaderOptions:FcsAtomFeedSelfPageEndpoint": "",
+    "FeedReaderOptions:HttpPolicyOptions:CircuitBreakerDurationOfBreak": "0.00:00:15",
+    "FeedReaderOptions:HttpPolicyOptions:CircuitBreakerToleranceCount": "5",
+    "FeedReaderOptions:HttpPolicyOptions:HttpRetryBackoffPower": "2",
+    "FeedReaderOptions:HttpPolicyOptions:HttpRetryCount": "3",
     "FUNCTIONS_EXTENSION_VERSION": "~3",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "PdsApplicationInsights": {
-      "Environment": "",
-      "InstrumentationKey": ""
-    },
-    "SchemaValidationSettings": {
-      "EnableSchemaVersionValidation": "false",
-      "SchemaManifestFilename": "contract_corporate_schema_v11.09.xsd",
-      "SchemaVersion": "11_09"
-    },
+    "PdsApplicationInsights:Environment": "",
+    "PdsApplicationInsights:InstrumentationKey": "",
+    "SchemaValidationSettings:EnableSchemaVersionValidation": "false",
+    "SchemaValidationSettings:SchemaManifestFilename": "",
+    "SchemaValidationSettings:SchemaVersion": "",
     "TimerInterval": "*/30 * * * * *"
   }
 }

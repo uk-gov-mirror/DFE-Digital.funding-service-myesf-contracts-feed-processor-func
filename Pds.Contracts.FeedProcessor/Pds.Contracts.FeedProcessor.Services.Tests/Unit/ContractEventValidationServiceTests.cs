@@ -5,7 +5,6 @@ using Moq;
 using Pds.Contracts.FeedProcessor.Services.Configuration;
 using Pds.Contracts.FeedProcessor.Services.Implementations;
 using Pds.Contracts.FeedProcessor.Services.Interfaces;
-using Pds.Contracts.FeedProcessor.Services.Tests.Helper;
 using Pds.Core.Logging;
 using System;
 using System.Collections.Generic;

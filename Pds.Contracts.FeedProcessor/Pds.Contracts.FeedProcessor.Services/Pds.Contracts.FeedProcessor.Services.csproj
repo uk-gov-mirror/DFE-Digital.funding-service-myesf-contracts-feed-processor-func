@@ -5,35 +5,33 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Implementations\FcsFeedReaderService.cs~RF14e0aa8e.TMP" />
-    <None Remove="Pds.Contracts.FeedProcessor.Services.csproj.transform" />
-	<None Remove="Schema\11_04\contract_corporate_schema_v11.04.xsd" />
-    <None Remove="Schema\11_05\contract_corporate_schema_v11.05.xsd" />
-    <None Remove="Schema\11_06\contract_corporate_schema_v11.06.xsd" />
-    <None Remove="Schema\11_07\contract_corporate_schema_v11.07.xsd" />
-    <None Remove="Schema\11_08\contract_corporate_schema_v11.08.xsd" />
-    <None Remove="Schema\11_09\contract_corporate_schema_v11.09.xsd" />
+    <Compile Remove="Schema\11_03\**" />
+    <Compile Remove="Schema\11_04\**" />
+    <Compile Remove="Schema\11_05\**" />
+    <Compile Remove="Schema\11_06\**" />
+    <Compile Remove="Schema\11_07\**" />
+    <Compile Remove="Schema\11_08\**" />
+    <EmbeddedResource Remove="Schema\11_03\**" />
+    <EmbeddedResource Remove="Schema\11_04\**" />
+    <EmbeddedResource Remove="Schema\11_05\**" />
+    <EmbeddedResource Remove="Schema\11_06\**" />
+    <EmbeddedResource Remove="Schema\11_07\**" />
+    <EmbeddedResource Remove="Schema\11_08\**" />
+    <None Remove="Schema\11_03\**" />
+    <None Remove="Schema\11_04\**" />
+    <None Remove="Schema\11_05\**" />
+    <None Remove="Schema\11_06\**" />
+    <None Remove="Schema\11_07\**" />
+    <None Remove="Schema\11_08\**" />
   </ItemGroup>
 
   <ItemGroup>
-	<EmbeddedResource Include="Schema\11_03\contract_corporate_schema_v11.03.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Schema\11_04\contract_corporate_schema_v11.04.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Schema\11_05\contract_corporate_schema_v11.05.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Schema\11_06\contract_corporate_schema_v11.06.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>  
-    <EmbeddedResource Include="Schema\11_07\contract_corporate_schema_v11.07.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>  
-    <EmbeddedResource Include="Schema\11_08\contract_corporate_schema_v11.08.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>  
+    <None Remove="Implementations\FcsFeedReaderService.cs~RF14e0aa8e.TMP" />
+    <None Remove="Pds.Contracts.FeedProcessor.Services.csproj.transform" />
+    <None Remove="Schema\11_09\contract_corporate_schema_v11.09.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>  
     <EmbeddedResource Include="Schema\11_09\contract_corporate_schema_v11.09.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>

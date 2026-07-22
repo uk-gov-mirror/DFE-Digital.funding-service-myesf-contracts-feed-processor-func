@@ -1,6 +1,4 @@
 ﻿using Pds.Contracts.FeedProcessor.Services.Models;
-using System.Collections.Generic;
-using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
 
 namespace Pds.Contracts.FeedProcessor.Services.Interfaces

@@ -20,70 +20,52 @@ For running the application locally, `local.settings.json` file need to be creat
 The Microsoft Azure Storage Emulator can be used to emulate the Azure Blob, Queue, and Table services for local development purposes.
 
 ## Application Settings (`local.settings.json`)
-```
+```json
 {
   "IsEncrypted": false,
-  "version": "2.0",
   "Values": {
-    "APPINSIGHTS_INSTRUMENTATIONKEY": ""
-    "AuditApiConfiguration": {
-      "ApiBaseAddress": "",
-      "AppUri": "",
-      "Authority": "",
-      "ClientId": "",
-      "ClientSecret": "",
-      "ShouldSkipAuthentication": "",
-      "TenantId": ""
-    },
-    "AzureStorageAccountOptions": {
-      "BlobAccessOptions": {
-        "Delay": "0.00:00:15",
-        "RetryCount": "3",
-        "XmlStorageContainer": ""
-      },
-      "ConnectionString": "",
-      "TableAccessOptions": {
-        "ConfigTableName": "",
-        "DeltaBackOff": "0.00:00:15",
-        "MaxAttempts": "3",
-        "PartitionKey": "FeedProcessor"
-      }
-    },
-    "AzureWebJobsStorage": "",
+    "AuditApiConfiguration:ApiBaseAddress": "",
+    "AuditApiConfiguration:AppUri": "",
+    "AuditApiConfiguration:Authority": "",
+    "AuditApiConfiguration:ClientId": "",
+    "AuditApiConfiguration:ClientSecret": "",
+    "AuditApiConfiguration:ShouldSkipAuthentication": "",
+    "AuditApiConfiguration:TenantId": "",
+    "AzureStorageAccountOptions:BlobAccessOptions:Delay": "0.00:00:15",
+    "AzureStorageAccountOptions:BlobAccessOptions:RetryCount": "3",
+    "AzureStorageAccountOptions:BlobAccessOptions:XmlStorageContainer": "",
+    "AzureStorageAccountOptions:ConnectionString": "",
+    "AzureStorageAccountOptions:TableAccessOptions:ConfigTableName": "",
+    "AzureStorageAccountOptions:TableAccessOptionsDeltaBackOff": "0.00:00:15",
+    "AzureStorageAccountOptions:TableAccessOptionsMaxAttempts": "3",
+    "AzureStorageAccountOptions:TableAccessOptionsPartitionKey": "",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
     "ContractEventsSessionQueue": "",
-    "Environment": "at",
-    "FeedReaderOptions": {
-      "ApiBaseAddress": "",
-      "Authority": "",
-      "ClientId": "",
-      "ClientSecret": "",
-      "TenantId": "",
-      "HttpPolicyOptions": {
-        "CircuitBreakerDurationOfBreak": "0.00:00:15",
-        "CircuitBreakerToleranceCount": "5",
-        "HttpRetryBackoffPower": "2",
-        "HttpRetryCount": "3"
-      }
-    },
+    "Environment": "local",
+    "FeedReaderOptions:ApiBaseAddress": "",
+    "FeedReaderOptions:AppUri": "",
+    "FeedReaderOptions:Authority": "",
+    "FeedReaderOptions:ClientId": "",
+    "FeedReaderOptions:ClientSecret": "",
+    "FeedReaderOptions:TenantId": "",
+    "FeedReaderOptions:FcsAtomFeedSelfPageEndpoint": "",
+    "FeedReaderOptions:HttpPolicyOptions:CircuitBreakerDurationOfBreak": "0.00:00:15",
+    "FeedReaderOptions:HttpPolicyOptions:CircuitBreakerToleranceCount": "5",
+    "FeedReaderOptions:HttpPolicyOptions:HttpRetryBackoffPower": "2",
+    "FeedReaderOptions:HttpPolicyOptions:HttpRetryCount": "3",
     "FUNCTIONS_EXTENSION_VERSION": "~3",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "PdsApplicationInsights": {
-      "Environment": "",
-      "InstrumentationKey": ""
-    },
-    "SchemaValidationSettings": {
-      "EnableSchemaVersionValidation": "false",
-      "SchemaManifestFilename": "contract_corporate_schema_v11.09.xsd",
-      "SchemaVersion": "11_09"
-    },
+    "PdsApplicationInsights:Environment": "",
+    "PdsApplicationInsights:InstrumentationKey": "",
+    "SchemaValidationSettings:EnableSchemaVersionValidation": "false",
+    "SchemaValidationSettings:SchemaManifestFilename": "",
+    "SchemaValidationSettings:SchemaVersion": "",
     "TimerInterval": "*/30 * * * * *"
   }
 }
 ```
 ### Setting Details
-
-- **`APPINSIGHTS_INSTRUMENTATIONKEY`**  
-  The key value for Application Insights resource for logging.
 
 - **`AuditApiConfiguration:ApiBaseAddress`**  
   The base URL endpoint for Audit API.
@@ -192,3 +174,75 @@ The Microsoft Azure Storage Emulator can be used to emulate the Azure Blob, Queu
 
 - **`TimerInterval`**  
   A CRON expression string (e.g., `0 */5 * * * *`) that defines the schedule or execution interval for a background worker, recurring job, or Azure Function timer trigger.
+
+## Test execution
+
+In order to test the application locally a valid `local.settings.json` file will need to be created in the `Pds.Contracts.FeedProcessor.Services.Tests` project. `local.settings.example.json`, in `Pds.Contracts.FeedProcessor.Services.Tests` can be used as a base and populated with appropriate values which can be found in Azure Portal. The local environment resources should be utilised.
+
+## Test Application Settings (`appsettings.json`)
+
+```json
+{
+  "AzureStorageAccountOptions:BlobAccessOptions:Delay": "0.00:00:15",
+  "AzureStorageAccountOptions:BlobAccessOptions:RetryCount": "3",
+  "AzureStorageAccountOptions:BlobAccessOptions:XmlStorageContainer": "",
+  "AzureStorageAccountOptions:ConnectionString": "",
+  "AzureStorageAccountOptions:TableAccessOptions:ConfigTableName": "",
+  "AzureStorageAccountOptions:TableAccessOptionsDeltaBackOff": "0.00:00:15",
+  "AzureStorageAccountOptions:TableAccessOptionsMaxAttempts": "3",
+  "AzureStorageAccountOptions:TableAccessOptionsPartitionKey": "",
+  "FeedReaderOptions:HttpPolicyOptions:CircuitBreakerDurationOfBreak": "0.00:00:15",
+  "FeedReaderOptions:HttpPolicyOptions:CircuitBreakerToleranceCount": "5",
+  "FeedReaderOptions:HttpPolicyOptions:HttpRetryBackoffPower": "2",
+  "FeedReaderOptions:HttpPolicyOptions:HttpRetryCount": "3"
+}
+```
+
+## Setting Details
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:BlobAccessOptions:Delay`**  
+  The duration to wait between retry attempts when a transient error occurs during a Blob storage operation.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:BlobAccessOptions:RetryCount`**  
+  The maximum number of retry attempts allowed for a single Blob storage operation before throwing an exception.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:BlobAccessOptions:XmlStorageContainer`**  
+  The name of the specific Azure Blob Storage container where XML data or configuration files are stored. (Use `contractevents`)
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:ConnectionString`**  
+  The primary authentication connection string containing endpoints and credentials used to connect to the custom Azure Storage Account. (Use `pdsdevsharedstr`)
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:TableAccessOptions:ConfigTableName`**  
+  The name of the Azure Table Storage table designated to hold application configuration settings or state data.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:TableAccessOptions:DeltaBackOff`**  
+  The incremental time value used in exponential backoff algorithms to increase the wait time between subsequent table operation retries.
+
+- **`AzureStorageAccountOptions:AzureStorageAccountOptions:TableAccessOptions:MaxAttempts`**  
+  The maximum number of connection or execution attempts permitted for an Azure Table Storage operation before it fails.
+
+- **`AzureStorageAccountOptions:TableAccessOptions:PartitionKey`**  
+  The logical partition key identifier used to group related entities inside Azure Table Storage for optimal querying.
+
+- **`FeedReaderOptions:HttpPolicyOptions:CircuitBreakerDurationOfBreak`**  
+  The duration (typically a `TimeSpan` string) that the circuit breaker remains open, blocking all outgoing HTTP requests, before entering a test state.
+
+- **`FeedReaderOptions:HttpPolicyOptions:CircuitBreakerToleranceCount`**  
+  The consecutive number of failed HTTP requests or specific status codes allowed before the circuit breaker trips and opens.
+
+- **`FeedReaderOptions:HttpPolicyOptions:HttpRetryBackoffPower`**  
+  The mathematical exponent or base value used to calculate the exponential delay between consecutive HTTP retry attempts.
+
+- **`FeedReaderOptions:HttpPolicyOptions:HttpRetryCount`**  
+  The maximum number of retry attempts allowed for a single HTTP request when encountering transient network errors or specific failure status codes.
+
+## Build and Test
+
+To build and test locally, you can either use Visual Studio, Visual Studio Code or simply use dotnet CLI `dotnet build` and `dotnet test` more information in dotnet CLI can be found at <https://docs.microsoft.com/en-us/dotnet/core/tools/>.
+
+## Contribute
+
+To contribute,
+
+- If you are part of the team then create a branch for changes and then submit your changes for review by creating a pull request.
+- If you are external to the organisation then fork this repository and make necessary changes and then submit your changes for review by creating a pull request.
