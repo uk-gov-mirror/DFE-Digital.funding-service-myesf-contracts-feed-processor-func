@@ -434,6 +434,7 @@ namespace Pds.Contracts.FeedProcessor.Services.Tests.Unit
         [DataRow("aeb2023", ContractFundingType.DWPAdultSkillsFund, "ASFP23-1003", "ASF2023-AS2627", "ASFA23-1002", "ASFP23-1003-v1-Partial.xml", "2627", "2026-06-01")]
         [DataRow("ttf", ContractFundingType.TakingTeachingFurther)]
         [DataRow("ttfy2", ContractFundingType.TakingTeachingFurtherYear2)]
+        [DataRow("ttfy2", ContractFundingType.TakingTeachingFurtherYear2, "TTFUY2-1001", "TTFY22526", "TTFY2-1012", "TTFUY2-1012-v1-Partial.xml", "2627", "2026-08-01")]
         [DataRow("ctec", ContractFundingType.ConstructionTechnicalExcellenceColleges)]
         [DataRow("csp-ipf", ContractFundingType.ConstructionSkillsPackageIndustryPlacementsFund)]
         [DataRow("SomeOtherValue", ContractFundingType.Unknown)]
