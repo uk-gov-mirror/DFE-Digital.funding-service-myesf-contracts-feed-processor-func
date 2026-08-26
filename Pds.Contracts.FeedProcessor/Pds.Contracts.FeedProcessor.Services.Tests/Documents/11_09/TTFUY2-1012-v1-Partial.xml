@@ -1,0 +1,59 @@
+<entry>
+  <id>uuid:12345678-9abc-def0-1234-123456789123</id>
+  <title type="text">Contract ESIF-9999:1.0 was Published to Provider</title>
+  <summary type="text">{'UKPRN': 10000001, 'contractNumber': 'ESIF-9999', 'version': 1}</summary>
+  <published>2021-01-01T01:01:01Z</published>
+  <updated>2021-01-02T01:01:01Z</updated>
+  <category term="Contract Published to Provider" label="A contract has been Published to Provider" />
+  <content type="application/vnd.sfa.contract.v1+atom+xml">
+    <contract schemaVersion="11.09" xmlns="urn:sfa:schemas:contract" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	  <contracts>
+		<contract>
+      <fundingType>
+        <fundingTypeCode>TTFY2</fundingTypeCode>
+        <fundingTypeName>Taking Teaching Further Year 2</fundingTypeName>
+      </fundingType>
+      <period>
+        <periodType>
+          <periodTypeCode>FY</periodTypeCode>
+          <periodTypeName>FINANCIAL YEAR</periodTypeName>
+        </periodType>
+        <period>2627</period>
+        <startDate>2026-08-01</startDate>
+        <endDate>2027-05-31</endDate>
+      </period>
+      <contractAllocations>
+        <contractAllocation>    
+		  <contractAllocationNumber>TTFY2-1012</contractAllocationNumber>
+          <fundingStreamPeriodCode>TTFY22526</fundingStreamPeriodCode>
+		  <ProcurementAttrs>
+			<TenderSpecTitle>SSW</TenderSpecTitle>
+			<LEPName>LEP Name</LEPName>
+		  </ProcurementAttrs>
+        </contractAllocation>
+      </contractAllocations>
+      <contractNumber>TTFUY2-1001</contractNumber>
+      <contractVersionNumber>1</contractVersionNumber>
+      <contractSubVersionNumber>0</contractSubVersionNumber>
+      <ContractApprovalDate>2026-08-02</ContractApprovalDate>
+      <StatusLastUpdatedDate>2026-08-02</StatusLastUpdatedDate>
+      <LastModifiedDate>2026-08-02</LastModifiedDate>
+      <contractor>
+        <ukprn>10000001</ukprn>
+      </contractor>
+      <contractType>Contract for Services</contractType>
+      <startDate>2026-08-01</startDate>
+      <endDate>2027-05-31</endDate>
+      <contractStatus>
+        <status>Published To Provider</status>
+        <parentStatus>Draft</parentStatus>
+      </contractStatus>
+      <contractValue>9099922.0000</contractValue>
+      <parentContractNumber>ESFA-10001</parentContractNumber>
+      <parentContractVersionNumber>1</parentContractVersionNumber>
+	  <amendmentType>Variation</amendmentType>
+    </contract>
+	  </contracts>
+	</contract>
+  </content>
+</entry>
