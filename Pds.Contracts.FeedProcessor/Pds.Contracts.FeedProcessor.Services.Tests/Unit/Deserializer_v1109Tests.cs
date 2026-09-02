@@ -437,6 +437,7 @@ namespace Pds.Contracts.FeedProcessor.Services.Tests.Unit
         [DataRow("ttfy2", ContractFundingType.TakingTeachingFurtherYear2, "TTFUY2-1001", "TTFY22526", "TTFY2-1012", "TTFUY2-1012-v1-Partial.xml", "2627", "2026-08-01")]
         [DataRow("ctec", ContractFundingType.ConstructionTechnicalExcellenceColleges)]
         [DataRow("csp-ipf", ContractFundingType.ConstructionSkillsPackageIndustryPlacementsFund)]
+        [DataRow("ttfr9", ContractFundingType.TakingTeachingFurtherRound9)]
         [DataRow("SomeOtherValue", ContractFundingType.Unknown)]
         [TestMethod, TestCategory("Unit")]
         public async Task Deserialize_PartialXML_ValidateFundingTypeEnum_ReturnsExpectedResult(string fundingType, ContractFundingType expectedType, string contractNumber = null, string fspCode = null, string contractAllocationNumber = null, string xmlFileName = "ESIF-9999-v1-Partial.xml", string period = "1426", string date = "2024-06-01")

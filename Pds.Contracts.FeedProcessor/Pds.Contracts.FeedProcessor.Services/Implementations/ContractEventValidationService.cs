@@ -223,7 +223,8 @@ namespace Pds.Contracts.FeedProcessor.Services.Implementations
                 "ttf",
                 "ttfy2",
                 "ctec",
-                "csp-ipf"
+                "csp-ipf",
+                "ttfr9"
             };
 
         #endregion

@@ -242,6 +242,7 @@ namespace Pds.Contracts.FeedProcessor.Services.Implementations
                 "ttfy2" => ContractFundingType.TakingTeachingFurtherYear2,
                 "ctec" => ContractFundingType.ConstructionTechnicalExcellenceColleges,
                 "csp-ipf" => ContractFundingType.ConstructionSkillsPackageIndustryPlacementsFund,
+                "ttfr9" => ContractFundingType.TakingTeachingFurtherRound9,
                 _ => ContractFundingType.Unknown
             };
         }
