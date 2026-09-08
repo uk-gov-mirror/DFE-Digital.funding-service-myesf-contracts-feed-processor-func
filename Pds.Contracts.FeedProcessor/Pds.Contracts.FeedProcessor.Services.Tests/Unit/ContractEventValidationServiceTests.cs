@@ -224,6 +224,7 @@ namespace Pds.Contracts.FeedProcessor.Services.Tests.Unit
         [DataRow("TTFY2")]
         [DataRow("CTEC")]
         [DataRow("CSP-IPF")]
+        [DataRow("TTFR9")]
         [TestMethod, TestCategory("Unit")]
         public async Task ValidateFundingTypeAsync_CorrectFundingType_ReturnsTrue(string fundingType)
         {
@@ -584,7 +585,8 @@ namespace Pds.Contracts.FeedProcessor.Services.Tests.Unit
                 "ttf",
                 "ttfy2",
                 "ctec",
-                "csp-ipf"
+                "csp-ipf",
+                "ttfr9"
             };
 
         #endregion

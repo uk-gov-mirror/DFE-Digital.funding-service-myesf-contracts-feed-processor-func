@@ -43,6 +43,9 @@
 	  <None Update="Documents\11_09\TTFUY2-1012-v1-Partial.xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="local.settings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="local.settings.example.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
